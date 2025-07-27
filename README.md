@@ -56,7 +56,9 @@
 ├── backend/              # 後端程式碼 (FastAPI)
 │   ├── main.py
 │   ├── requirements.txt
-│   └── google_sheets.py  # Google API 操作模組
+│   └── data/
+│        ├── csv
+│        └── xlsx
 └── README.md             # 專案說明文件
 ```
 
