@@ -1,13 +1,11 @@
-# Bookkeeping
+# 🧾 Bookkeeping
  This project involves the development and customization of a personal bookkeeping application designed for use on both computers and smartphones. While primarily intended for practice and personal use, the project also serves as a platform for experimenting with and adopting new and advanced technologies to enhance development skills.
-
-# 🧾 Personal Finance Web App (Serverless with Google Sheets)
-
-一個無後端的記帳應用，使用純前端（React）技術建構，資料儲存在 Google Sheets，適合個人財務管理。透過 Google Apps Script 或 Google OAuth API 與 Sheet 溝通，實現記帳紀錄的新增、查詢與可視化。
 
 ---
 
 ## 📌 專案特色
+
+本專案為一個個人記帳應用程式，採用前端 React (或純 HTML/CSS/Tailwind) 作為使用者介面，後端使用 FastAPI 處理商業邏輯，並將資料儲存於 Google Sheets。此架構兼顧開發效率與擴展彈性，適合個人或小型專案使用。
 
 - ✅ 無需後端伺服器，節省部署與維運成本
 - ✅ 支援資料寫入 Google Sheet，雲端儲存資料
@@ -27,86 +25,60 @@
 
 ---
 
+## 功能流程
+1. 使用者在前端輸入記帳資料（類別、金額、日期、備註等）
+2. 前端將資料透過 HTTP POST 請求送至 FastAPI 後端 API
+3. FastAPI 執行邏輯運算（驗證資料格式、計算統計等）
+4. FastAPI 透過 Google Sheets API 將資料存入指定試算表
+5. 使用者查詢記帳紀錄時，前端發起 GET 請求，FastAPI 從 Google Sheets 讀取資料並回傳
+6. 前端接收資料並以表格或圖表呈現
+
+---
+
 ## 🔧 使用技術
 
-| 層 | 技術 | 描述 |
-|----|------|------|
-| 前端 | React + Vite | SPA 實作 |
-| UI 框架 | Tailwind CSS | 快速開發、美觀 |
-| 資料儲存 | Google Sheets | 當作後端資料庫 |
-| 傳輸方式 | Apps Script / Google Sheets API | 實現資料讀寫 |
-| 部署 | Vercel / GitHub Pages | 部署靜態網站 |
+| 元件     | 技術與工具                           | 功能說明               |
+| ------ | ------------------------------- | ------------------ |
+| 前端     | React + Tailwind CSS            | 使用者輸入介面與資料顯示       |
+| 後端     | FastAPI                         | API 服務，處理邏輯與與資料操作  |
+| 資料庫    | Google Sheets                   | 儲存及讀取記帳資料          |
+| API 認證 | Google Service Account + OAuth2 | 安全存取 Google Sheets |
 
 ---
 
 ## 📁 專案架構
 
 ```yaml
-web-app/
-├── index.html
-├── src/
-│ ├── App.tsx # 主頁面元件
-│ ├── components/
-│ │ └── TransactionForm.tsx
-│ │ └── TransactionList.tsx
-│ └── utils/
-│ └── sheets.ts # 封裝 Sheets API 請求
-├── public/
-│ └── assets/
-└── README.md
+/personal-finance-app
+├── frontend/             # 前端程式碼 (React + Tailwind CSS)
+│   ├── src/
+│   ├── public/
+│   └── package.json
+├── backend/              # 後端程式碼 (FastAPI)
+│   ├── main.py
+│   ├── requirements.txt
+│   └── google_sheets.py  # Google Sheets API 操作模組
+└── README.md             # 專案說明文件
 ```
 
 ---
 
-## 🚀 使用方式
-
-### 方案一：使用 Google Apps Script 當 Web API
-
-1. 建立 Google Sheet，命名為 `MyFinanceSheet`
-2. 點「擴充功能 → Apps Script」，貼上以下代碼：
-
-```js
-function doPost(e) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Transactions");
-  const data = JSON.parse(e.postData.contents);
-  sheet.appendRow([new Date(), data.type, data.amount, data.note]);
-  return ContentService.createTextOutput("Success");
-}
-```
-3. 點「部署 → 部署為網頁應用程式」：
-* 新版本名稱：v1
-*  誰可以存取：任何人皆可使用
-4. 複製 Web App URL，前端可直接發送 fetch 請求：
-
-```js
-fetch('https://script.google.com/macros/s/your-script-id/exec', {
-  method: 'POST',
-  body: JSON.stringify({
-    type: "expense",
-    amount: 150,
-    note: "午餐"
-  })
-});
-```
----
-方案二：使用 Google Sheets API + OAuth（進階）
-* 適合中階使用者，有 OAuth 2.0 流程
-
-1. 建立 GCP 專案並啟用 Google Sheets API
-2. 設定 OAuth 憑證，允許使用者登入
-3. 在前端整合登入按鈕與 access token 管理
-4. 使用 gapi.client.sheets.spreadsheets.values.append() 寫入資料
+## 📦 部署建議
+1. 前端：可使用 Vercel、Netlify 等免費靜態網站部署平台
+2. 後端：可部署於 Render、Railway 等免費雲端服務（注意睡眠限制）
+3. Google Sheets：設定 Service Account 並授予試算表權限，確保後端能安全存取
 
 ## 🔐 注意事項
-* 請勿公開部署包含憑證的 Apps Script URL
-* 若採用 OAuth + Sheets API，請做好 token 管理
-* 若為多人使用，建議做權限機制（非此版本範圍）
+* Google Sheets 適合小規模資料與簡單應用，若資料量大或複雜，建議使用正式資料庫
+* 部署免費後端平台多數會有睡眠限制，首次請求會有延遲，屬正常現象
+* Google Sheets API 需要妥善管理 OAuth2 認證資訊與 Service Account 金鑰，避免權限外洩
+* 建議前端做基本資料驗證，提高使用者體驗與資料正確性
 
-## 📦 部署方式（Vercel）
-1. 註冊 Vercel
-2. 新增專案 → 指定 GitHub Repo
-3. 將 vite.config.ts 設為 base 路徑 /
-4. 部署完成後即可存取 https://your-project.vercel.app
+## 未來擴展方向
+* 新增使用者登入與權限管理功能
+* 使用正式資料庫（如 PostgreSQL）取代 Google Sheets
+* 增加資料分析與圖表功能
+* 加入通知、匯出報表等附加功能
 
 ## 🙋‍♂️ 作者 Ludwig
 * 國立中央大學 資工系畢業
