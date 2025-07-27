@@ -58,7 +58,8 @@
 │   ├── requirements.txt
 │   └── data/
 │        ├── csv
-│        └── xlsx
+│        ├── xlsx
+│        └── categories.json
 └── README.md             # 專案說明文件
 ```
 
