@@ -49,19 +49,11 @@
 
 ```yaml
 bookkeeper/
-├── __main__.py           ← 進入點：執行 CLI 選單
-├── cli.py                ← 主選單與 CLI 操作邏輯
-├── io/
-│   ├── file_handler.py   ← 處理 CSV / Excel 檔案載入與儲存
-│   └── drive_handler.py  ← 處理 Google Drive 上傳與下載
-├── core/
-│   ├── transactions.py   ← 記帳操作邏輯（新增、刪除、分類）
-│   ├── balance.py        ← 期初餘額設定/讀取
-│   └── reports.py        ← 月報與年報的產生
+├── main.py           ← 進入點：執行 CLI 選單
+│
 └── data/
     ├── csv/
-    ├── xlsx/
-    └── meta/
+    └── xlsx/
 ```
 
 ---
