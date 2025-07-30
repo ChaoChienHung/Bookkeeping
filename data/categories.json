@@ -8,11 +8,15 @@
   "Entertainment",
   "Gift",
   "Healthcare",
+  "Interest",
   "Meal",
+  "Others",
   "Salary",
   "Savings",
   "Snack",
   "Stationery",
+  "Transfer",
   "Transport",
-  "Others"
+  "Withdrawal",
+  "Prize"
 ]
