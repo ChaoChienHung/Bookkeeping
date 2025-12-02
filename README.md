@@ -9,26 +9,18 @@ Originally created for practice and experimentation, it also serves as a playgro
 
 ```
  Web   -----\
-               → Server → Database
+       API Request → Server → Database
 Mobile -----/
 ```
 
-### Web
-- Next.js  
-- React
+### Technology Stack
 
-### Mobile
-- Flutter
-
-### Server
-- Python  
-  - FastAPI
-
-### Database
-- SQLite  
-- PostgreSQL  
-- MySQL  
-- MariaDB
+| Layer       | Technology                               | Purpose                                   |
+|-------------|------------------------------------------|-------------------------------------------|
+| Web Client  | Next.js, React                           | Browser-based UI                          |
+| Mobile App  | Flutter                                  | Cross-platform mobile UI                  |
+| Server API  | Python (FastAPI)                         | Business logic, validation, data routing  |
+| Database    | SQLite, PostgreSQL, MySQL, MariaDB       | Persistent storage                        |
 
 ---
 
