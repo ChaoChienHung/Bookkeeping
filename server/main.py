@@ -9,8 +9,8 @@ from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
 # ─── Constants & Setup ─────────────────────────────────
 DATA_BASE_DIR = './data'
-ACCOUNTS_FILE = './data/accounts.json'
-CATEGORY_FILE = './data/categories.json'
+ACCOUNTS_FILE = './src/accounts.json'
+CATEGORY_FILE = './src/categories.json'
 # DRIVE_FOLDER_ID = 'YOUR_BOOKKEEPING_DATA_FOLDER_ID'
 DRIVE_FOLDER_ID = '1N0LSvAdD1kHZJ4XaCSo8O93v6NX9JljO'
 
@@ -132,6 +132,24 @@ def choose_category():
                 print("❌ 無效名稱或已存在。")
         print("❌ 請輸入有效數字。")
 
+# ─── Utilities ─────────────────────────────────────────
+def refresh_balance():
+    global transactions_df, transaction_counter, current_balance
+    if transactions_df.empty:
+        print("⚠️ 沒有交易紀錄可刷新。")
+        return
+
+    transactions_df.sort_values(by=['Date', 'Transaction ID'], inplace=True, ignore_index=True)
+    bal = 0
+    balances = []
+    for amt in transactions_df['Amount']:
+        bal += amt
+        balances.append(bal)
+    transactions_df['Balance'] = balances
+    transaction_counter = transactions_df['Transaction ID'].max() + 1
+    current_balance = balances[-1]
+    print("🔄 餘額已重新計算完畢。")
+
 # ─── Transaction Recording & Removal ───────────────────
 def record_transaction(date, amount, category, description):
     global transaction_counter, transactions_df, current_balance
@@ -147,6 +165,7 @@ def record_transaction(date, amount, category, description):
     }
     current_balance = balance
     transaction_counter += 1
+    refresh_balance()
     print(f"✅ 交易已記錄: {amount:.2f} | {category} | {description}")
 
 def remove_transaction_by_date():
@@ -185,6 +204,7 @@ def remove_transaction_by_date():
     transactions_df['Balance'] = balances
     transaction_counter = len(transactions_df) + 1
     current_balance = balances[-1] if balances else 0.0
+    refresh_balance()
     print(f"✅ 已刪除: ID {removed['Transaction ID']} 金額:{removed['Amount']} 分類:{removed['Category']}")
 
 # ─── Reporting ─────────────────────────────────────────
@@ -369,8 +389,10 @@ def menu():
             cat = choose_category()
             desc = input("描述: ")
             record_transaction(date, amt, cat, desc)
+
         elif choice == '2':
             remove_transaction_by_date()
+            
         elif choice == '3':
             y = int(input("年份(YYYY): "))
             m = int(input("月份(1-12): "))
