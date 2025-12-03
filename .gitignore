@@ -1,0 +1,9 @@
+
+./credentials.json
+./token.json
+./venv
+*.csv
+*.xlsx
+/venv
+server/credentials.json
+server/token.json
