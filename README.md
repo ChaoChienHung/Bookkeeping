@@ -47,6 +47,18 @@ The architecture balances simplicity, flexibility, and speed—ideal for persona
 
 ---
 
+## 📌 Current Working Features
+
+- [ ] Compare the config.yaml vs config.py and possibly move the configuration to Config.yaml
+- [ ] Use REST API to move the logic to API endpoint to allow for calling
+- [ ] Use FAST API to host the asynchronous non blocking server
+- [ ] Use Streamlit to provide a simple web and API test
+- [ ] Add currency category in the data
+- [ ] Add a user login form for login feature
+- [ ] Change multiple accounts into "piggy bank" which allows for name editing and integrate them into a single user to allow for more useful operation
+
+---
+
 ## 🔄 Workflow Overview
 
 1. User enters transaction data (category, amount, date, note, etc.)  
