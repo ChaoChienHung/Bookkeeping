@@ -7,20 +7,22 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
+# ----------------------
 # Load Config
-# ---------------
+# ----------------------
 def load_config(path="config.yaml"):
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 config = load_config()
 
-
+# ----------------------
 # Constants & Setup
 # ----------------------
 DATA_BASE_DIR = config["paths"]["data_base_dir"]
-ACCOUNTS_FILE = config["paths"]["accounts_file"]
-CATEGORY_FILE = config["paths"]["categories_file"]
+USER_DATA_DIR = config["paths"]["user_data_dir"]
+ACCOUNTS_LIST = config["paths"]["accounts_list"]
+CATEGORY_LIST = config["paths"]["categories_file"]
 
 DRIVE_FOLDER_ID = config["google_drive"]["folder_id"]
 SCOPES = config["google_drive"]["scopes"]
@@ -29,20 +31,22 @@ DEFAULT_CATEGORIES = config["defaults"]["categories"]
 
 columns = ['Transaction ID', 'Date', 'Amount', 'Category', 'Description', 'Balance']
 account_name = None
+piggy_bank = None
 loaded_year = None
 transactions_df = pd.DataFrame(columns=columns)
 transaction_counter = 1
 current_balance = 0.0
 
+# ----------------------
 # Account Management
 # ----------------------
 def load_accounts():
-    if os.path.exists(ACCOUNTS_FILE):
-        return json.load(open(ACCOUNTS_FILE, 'r', encoding='utf-8'))
+    if os.path.exists(ACCOUNTS_LIST):
+        return json.load(open(ACCOUNTS_LIST, 'r', encoding='utf-8'))
     return []
 
 def save_accounts(accounts):
-    with open(ACCOUNTS_FILE, 'w', encoding='utf-8') as f:
+    with open(ACCOUNTS_LIST, 'w', encoding='utf-8') as f:
         json.dump(accounts, f, ensure_ascii=False, indent=2)
 
 def select_account():
@@ -73,23 +77,64 @@ def select_account():
         else:
             print("❌ 無效名稱")
 
+# ----------------------
+# Piggy Bank Management
+# ----------------------
+def load_piggy_banks():
+    base = os.path.join(USER_DATA_DIR, account_name, "piggy_banks")
+    if not os.path.exists(base):
+        return []
+    return [name for name in os.listdir(base)
+            if os.path.isdir(os.path.join(base, name))]
+
+def save_piggy_bank(name):
+    folder = os.path.join(USER_DATA_DIR, account_name, "piggy_banks", name)
+    os.makedirs(folder, exist_ok=True)
+
+def select_piggy_bank():
+    global piggy_bank
+    banks = load_piggy_banks()
+    print("\n🐷 你的存錢筒：")
+    for i, b in enumerate(banks, 1):
+        print(f"{i}. {b}")
+    print(f"{len(banks)+1}. ➕ 新增存錢筒")
+
+    choice = input(f"選擇 (1-{len(banks)+1}): ").strip()
+    if choice.isdigit():
+        idx = int(choice)
+        if 1 <= idx <= len(banks):
+            piggy_bank = banks[idx-1]
+            print(f"✅ 使用存錢筒：{piggy_bank}")
+            return
+
+    # Add new
+    while True:
+        new = input("請輸入新的存錢筒名稱: ").strip()
+        if re.match(r"^[\w\-]+$", new):
+            save_piggy_bank(new)
+            piggy_bank = new
+            print(f"🐷 已新增存錢筒: {piggy_bank}")
+            return
+        print("❌ 無效名稱")
+
+# ----------------------
 # File Path Helpers
 # ----------------------
-def get_account_folder(extension='csv'):
-    global account_name
-    folder = os.path.join(DATA_BASE_DIR, account_name, extension)
+def get_piggy_bank_folder(extension='csv'):
+    global account_name, piggy_bank
+    folder = os.path.join(USER_DATA_DIR, account_name, "piggy_banks", piggy_bank, extension)
     os.makedirs(folder, exist_ok=True)
     return folder
 
 def get_filename(year=None, extension='csv'):
     if year is None:
         year = datetime.now().year
-    folder = get_account_folder(extension)
+    folder = get_piggy_bank_folder(extension)
     name = f"{year}_transactions.{extension}"
     return os.path.join(folder, name)
 
 def list_transaction_files(extension='csv'):
-    folder = get_account_folder(extension)
+    folder = get_piggy_bank_folder(extension)
     pattern = os.path.join(folder, f"*_transactions.{extension}")
     files = glob.glob(pattern)
     year_map = {}
@@ -100,12 +145,13 @@ def list_transaction_files(extension='csv'):
             year_map[int(m.group(1))] = f
     return year_map
 
+# ----------------------
 # Category Handling
 # ----------------------
 def load_categories():
-    if os.path.exists(CATEGORY_FILE):
+    if os.path.exists(CATEGORY_LIST):
         try:
-            cats = json.load(open(CATEGORY_FILE, 'r', encoding='utf-8'))
+            cats = json.load(open(CATEGORY_LIST, 'r', encoding='utf-8'))
             if not isinstance(cats, list): cats = []
         except:
             cats = []
@@ -118,7 +164,7 @@ def load_categories():
     return cats
 
 def save_categories(categories):
-    with open(CATEGORY_FILE, 'w', encoding='utf-8') as f:
+    with open(CATEGORY_LIST, 'w', encoding='utf-8') as f:
         json.dump(categories, f, ensure_ascii=False, indent=2)
 
 def choose_category():
@@ -142,8 +188,9 @@ def choose_category():
                     return new
         print("❌ 無效選項")
 
+# ----------------------
 # Utilities
-# --------------
+# ----------------------
 def refresh_balance():
     global transactions_df, transaction_counter, current_balance
     if transactions_df.empty:
@@ -160,7 +207,9 @@ def refresh_balance():
     current_balance = balances[-1]
     print("🔄 餘額已重新計算完畢。")
 
-# ─── Transaction Recording & Removal ───────────────────
+# ----------------------
+# Transaction Recording & Removal
+# ----------------------
 def record_transaction(date, amount, category, description):
     global transaction_counter, transactions_df, current_balance
     date = pd.to_datetime(date)
@@ -217,6 +266,7 @@ def remove_transaction_by_date():
     refresh_balance()
     print(f"✅ 已刪除: ID {removed['Transaction ID']} 金額:{removed['Amount']} 分類:{removed['Category']}")
 
+# ----------------------
 # Reporting
 # ----------------------
 def summarize_expense_by_category(df):
@@ -260,7 +310,8 @@ def generate_yearly_report(year):
         for cat, amt in ydf[ydf['Amount']>0].groupby('Category')['Amount'].sum().sort_values(ascending=False).items():
             print(f"- {cat}: {amt:.2f} ({amt/inc*100:.1f}%)")
 
-# File I/O (CSV Only)
+# ----------------------
+# File I/O
 # ----------------------
 def load_from_csv(year=None):
     global transactions_df, transaction_counter, current_balance, loaded_year
@@ -296,7 +347,9 @@ def save_to_csv(year=None):
     transactions_df.to_csv(fn, index=False, encoding='utf-8-sig')
     print(f"📄 已儲存 CSV: {fn}")
 
-# Google Drive Upload
+# ----------------------
+# Google Drive Integration
+# ----------------------
 def authenticate():
     creds = None
     if os.path.exists('token.json'):
@@ -337,13 +390,14 @@ def download_csv_as_df(service, file_id):
         print(f"❌ 下載失敗: {e}")
         return pd.DataFrame(columns=columns)
 
-# Menu & CLI
+# ----------------------
+# CLI Menu
 # ----------------------
 def menu():
     creds = authenticate()
     service = build('drive', 'v3', credentials=creds)
     while True:
-        print(f"\n📘 選單： (目前年度資料: {loaded_year if loaded_year else '尚未載入'})")
+        print(f"\n📘 選單： (帳戶: {account_name} | 存錢筒: {piggy_bank} | 目前年度: {loaded_year if loaded_year else '尚未載入'})")
         print("1. 新增交易")
         print("2. 刪除交易（按日期）")
         print("3. 月度報告")
@@ -352,9 +406,10 @@ def menu():
         print("6. 載入資料")
         print("7. 上傳至 Google Drive")
         print("8. 下載 CSV 從 Drive")
-        print("9. 離開")
+        print("9. 更換存錢筒（Piggy Bank）")
+        print("10. 離開")
 
-        choice = input("請輸入選項 (1-9): ").strip()
+        choice = input("請輸入選項 (1-10): ").strip()
 
         if choice == '1':
             date = input("日期 (YYYY-MM-DD): ")
@@ -376,66 +431,42 @@ def menu():
             generate_yearly_report(y)
 
         elif choice == '5':
-            save_to_csv(loaded_year)
+            save_to_csv()
 
         elif choice == '6':
-            files = list_transaction_files('csv')
-            if not files:
-                print("⚠️ 無 CSV 檔")
-                continue
-            print("可用檔案：")
-            years = sorted(files)
-            for idx, y in enumerate(years, 1):
-                print(f"{idx}. {y}")
-            sel = input("選擇載入編號 (0 取消): ").strip()
-            if sel == '0':
-                continue
-            try:
-                idx = int(sel)-1
-                y = years[idx]
-                load_from_csv(y)
-            except:
-                print("❌ 載入錯誤")
+            y = input("年份(留空使用最新): ").strip()
+            load_from_csv(int(y) if y else None)
 
         elif choice == '7':
-            save_to_csv(loaded_year)
-            fn = get_filename(loaded_year, 'csv')
-            csv_file_name = os.path.basename(fn)
-            upload_csv(service, fn, f"{csv_file_name}")
+            fn = get_filename(loaded_year if loaded_year else None, 'csv')
+            upload_csv(service, fn, os.path.basename(fn))
 
         elif choice == '8':
-            file_id = input("請輸入要下載的 Google Sheet 檔案ID: ").strip()
+            file_id = input("輸入 Google Drive 檔案 ID: ")
             df = download_csv_as_df(service, file_id)
-
-            year = datetime.now().year
-            fn = get_filename(year, 'csv')
-            df.to_csv(fn, index=False, encoding='utf-8-sig')
-            print(f"📄 已儲存下載 CSV 至：{fn}")
-
-            global transactions_df, transaction_counter, current_balance
-            transactions_df = df.copy()
-            transactions_df['Date'] = pd.to_datetime(transactions_df['Date'])
-            transactions_df.sort_values(by=['Date', 'Transaction ID'], inplace=True, ignore_index=True)
-
-            if 'Balance' not in transactions_df.columns:
-                bal = 0; balances = []
-                for amt in transactions_df['Amount']:
-                    bal += amt; balances.append(bal)
-                transactions_df['Balance'] = balances
-
-            transaction_counter = transactions_df['Transaction ID'].max() + 1
-            current_balance = transactions_df['Balance'].iloc[-1] if not transactions_df.empty else 0.0
-
-            print(f"✅ 已更新本地資料，共 {len(transactions_df)} 筆")
+            if not df.empty:
+                global transactions_df
+                transactions_df = df
+                refresh_balance()
+                print("✅ 已載入 Drive CSV")
 
         elif choice == '9':
-            print("👋 掰掰！")
+            select_piggy_bank()
+            load_from_csv()
+
+        elif choice == '10':
+            print("👋 再見！")
             break
 
-        else:
-            print("❌ 無效選項")
 
-if __name__ == '__main__':
+        else:
+            print("❌ 無效選項。")
+
+# ----------------------
+# Startup
+# ----------------------
+if __name__ == "__main__":
     select_account()
+    select_piggy_bank()
     load_from_csv()
     menu()
