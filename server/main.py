@@ -1,20 +1,31 @@
-import os, io, re, glob, json
 import pandas as pd
 from datetime import datetime
+import os, io, re, glob, json, yaml
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
+# Load Config
+# ---------------
+def load_config(path="config.yaml"):
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+config = load_config()
+
+
 # Constants & Setup
 # ----------------------
-DATA_BASE_DIR = './data'
-ACCOUNTS_FILE = './src/accounts.json'
-CATEGORY_FILE = './src/categories.json'
-DRIVE_FOLDER_ID = '1N0LSvAdD1kHZJ4XaCSo8O93v6NX9JljO'
+DATA_BASE_DIR = config["paths"]["data_base_dir"]
+ACCOUNTS_FILE = config["paths"]["accounts_file"]
+CATEGORY_FILE = config["paths"]["categories_file"]
 
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+DRIVE_FOLDER_ID = config["google_drive"]["folder_id"]
+SCOPES = config["google_drive"]["scopes"]
+
+DEFAULT_CATEGORIES = config["defaults"]["categories"]
 
 columns = ['Transaction ID', 'Date', 'Amount', 'Category', 'Description', 'Balance']
 account_name = None
@@ -62,7 +73,8 @@ def select_account():
         else:
             print("❌ 無效名稱")
 
-# ─── File Path Helpers ────────────────────────────────
+# File Path Helpers
+# ----------------------
 def get_account_folder(extension='csv'):
     global account_name
     folder = os.path.join(DATA_BASE_DIR, account_name, extension)
@@ -101,7 +113,7 @@ def load_categories():
         cats = []
     cats.sort()
     if not cats:
-        cats = ['Food', 'Salary', 'Transport', 'Entertainment', 'Others']
+        cats = DEFAULT_CATEGORIES.copy()
         save_categories(cats)
     return cats
 
