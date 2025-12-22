@@ -22,14 +22,18 @@ class AccountResponse(BaseModel):
 
 @router.get("/accounts", response_model=List[AccountResponse])
 async def list_accounts():
-    """List all accounts"""
+    """
+    List all accounts
+    """
     accounts = account_manager.list_accounts()
     return accounts
 
 
 @router.post("/accounts", status_code=201)
 async def create_account(account: AccountCreate):
-    """Create a new account"""
+    """
+    Create a new account
+    """
     result = account_manager.create_account(account.name)
     
     if not result["success"]:
@@ -40,7 +44,9 @@ async def create_account(account: AccountCreate):
 
 @router.get("/accounts/{account_name}")
 async def get_account(account_name: str):
-    """Get account details"""
+    """
+    Get account details
+    """
     account = account_manager.get_account(account_name)
     
     if not account:
@@ -51,7 +57,9 @@ async def get_account(account_name: str):
 
 @router.delete("/accounts/{account_name}")
 async def delete_account(account_name: str, delete_data: bool = False):
-    """Delete an account"""
+    """
+    Delete an account
+    """
     result = account_manager.delete_account(account_name, delete_data)
     
     if not result["success"]:
