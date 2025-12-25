@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: bookkeeping-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=Bookkeeping API
+      - DATA_BASE_DIR=/app/data
+      - USER_DATA_DIR=/app/data/user
+      - DATABASE_URL=sqlite:///./data/bookkeeping.db
+    volumes:
+      - ../data:/app/data
+      - ../config:/app/config
+      - ../backend/credentials.json:/app/credentials.json:ro
+      - ../backend/token.json:/app/token.json
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend service (when implemented)
+  # frontend:
+  #   build:
+  #     context: ../frontend
+  #     dockerfile: ../docker/Dockerfile.frontend
+  #   container_name: bookkeeping-frontend
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=http://backend:8000
+  #   depends_on:
+  #     - backend
+  #   restart: unless-stopped
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  default:
+    name: bookkeeping-network
