@@ -72,13 +72,184 @@ The architecture balances simplicity, flexibility, and speed—ideal for persona
 
 ## 📁 Project Structure
 
-```yaml
-bookkeeper/
-├── main.py           # Entry point: CLI menu
+```perl
+bookkeeping-app/
+├── backend/                          # FastAPI server
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py                   # FastAPI app entry point
+│   │   ├── config.py                 # Configuration management
+│   │   ├── dependencies.py           # Dependency injection
+│   │   │
+│   │   ├── api/                      # API routes
+│   │   │   ├── __init__.py
+│   │   │   └── v1/
+│   │   │       ├── __init__.py
+│   │   │       ├── transactions.py   # Transaction endpoints
+│   │   │       ├── accounts.py       # Account management
+│   │   │       ├── categories.py     # Category management
+│   │   │       ├── reports.py        # Reports & analytics
+│   │   │       └── auth.py           # Authentication
+│   │   │
+│   │   ├── core/                     # Core business logic
+│   │   │   ├── __init__.py
+│   │   │   ├── accounts.py           # Account operations
+│   │   │   ├── transactions.py       # Transaction logic
+│   │   │   ├── categories.py         # Category logic
+│   │   │   ├── piggy_banks.py        # Piggy bank operations
+│   │   │   └── reports.py            # Report generation
+│   │   │
+│   │   ├── services/                 # External services
+│   │   │   ├── __init__.py
+│   │   │   ├── google_drive.py       # Google Drive integration
+│   │   │   ├── storage.py            # Storage abstraction
+│   │   │   └── auth_service.py       # Authentication service
+│   │   │
+│   │   ├── models/                   # Data models (Pydantic)
+│   │   │   ├── __init__.py
+│   │   │   ├── transaction.py
+│   │   │   ├── account.py
+│   │   │   ├── category.py
+│   │   │   └── report.py
+│   │   │
+│   │   ├── schemas/                  # Request/Response schemas
+│   │   │   ├── __init__.py
+│   │   │   ├── transaction.py
+│   │   │   ├── account.py
+│   │   │   └── report.py
+│   │   │
+│   │   ├── db/                       # Database layer
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py               # Base database setup
+│   │   │   ├── session.py            # DB session management
+│   │   │   └── repositories/         # Data access layer
+│   │   │       ├── __init__.py
+│   │   │       ├── transaction_repo.py
+│   │   │       └── account_repo.py
+│   │   │
+│   │   └── utils/                    # Utility functions
+│   │       ├── __init__.py
+│   │       ├── date_utils.py
+│   │       ├── file_utils.py
+│   │       └── validators.py
+│   │
+│   ├── tests/                        # Backend tests
+│   │   ├── __init__.py
+│   │   ├── conftest.py
+│   │   ├── test_api/
+│   │   ├── test_core/
+│   │   └── test_services/
+│   │
+│   ├── migrations/                   # Database migrations
+│   │   └── alembic/
+│   │
+│   ├── requirements.txt              # Python dependencies
+│   ├── requirements-dev.txt          # Dev dependencies
+│   ├── pyproject.toml                # Python project config
+│   ├── .env.example                  # Environment variables template
+│   └── README.md                     # Backend documentation
 │
-└── data/
-    ├── csv/
-    └── xlsx/
+├── frontend/                         # Next.js/React frontend
+│   ├── public/
+│   │   ├── favicon.ico
+│   │   └── assets/
+│   │
+│   ├── src/
+│   │   ├── app/                      # Next.js 13+ app directory
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx
+│   │   │   ├── dashboard/
+│   │   │   ├── transactions/
+│   │   │   ├── reports/
+│   │   │   └── settings/
+│   │   │
+│   │   ├── components/               # React components
+│   │   │   ├── ui/                   # Reusable UI components
+│   │   │   ├── transactions/
+│   │   │   ├── charts/
+│   │   │   ├── forms/
+│   │   │   └── layouts/
+│   │   │
+│   │   ├── lib/                      # Utilities & helpers
+│   │   │   ├── api.ts                # API client
+│   │   │   ├── utils.ts
+│   │   │   └── constants.ts
+│   │   │
+│   │   ├── hooks/                    # Custom React hooks
+│   │   │   ├── useTransactions.ts
+│   │   │   ├── useAccounts.ts
+│   │   │   └── useAuth.ts
+│   │   │
+│   │   ├── store/                    # State management (Zustand/Redux)
+│   │   │   ├── authStore.ts
+│   │   │   ├── transactionStore.ts
+│   │   │   └── uiStore.ts
+│   │   │
+│   │   └── types/                    # TypeScript types
+│   │       ├── transaction.ts
+│   │       ├── account.ts
+│   │       └── api.ts
+│   │
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── tailwind.config.ts
+│   ├── next.config.js
+│   └── README.md
+│
+├── mobile/                           # Flutter mobile app
+│   ├── lib/
+│   │   ├── main.dart
+│   │   ├── models/
+│   │   ├── screens/
+│   │   ├── widgets/
+│   │   ├── services/
+│   │   └── utils/
+│   ├── pubspec.yaml
+│   └── README.md
+│
+├── shared/                           # Shared code/types
+│   ├── types/                        # Shared TypeScript types
+│   └── constants/                    # Shared constants
+│
+├── data/                             # Local data storage
+│   ├── user/                         # User-specific data
+│   │   └── [account_name]/
+│   │       └── piggy_banks/
+│   │           └── [bank_name]/
+│   │               ├── csv/
+│   │               └── json/
+│   └── cache/                        # Temporary cache
+│
+├── config/                           # Configuration files
+│   ├── config.yaml                   # Main config
+│   ├── config.dev.yaml               # Development config
+│   └── config.prod.yaml              # Production config
+│
+├── scripts/                          # Utility scripts
+│   ├── setup.sh                      # Setup script
+│   ├── migrate.py                    # Data migration
+│   └── backup.py                     # Backup utility
+│
+├── docs/                             # Documentation
+│   ├── api/                          # API documentation
+│   ├── setup.md                      # Setup guide
+│   └── architecture.md               # Architecture docs
+│
+├── .github/                          # GitHub specific files
+│   └── workflows/                    # CI/CD workflows
+│       ├── backend-tests.yml
+│       └── frontend-tests.yml
+│
+├── docker/                           # Docker configurations
+│   ├── Dockerfile.backend
+│   ├── Dockerfile.frontend
+│   └── docker-compose.yml
+│
+├── .gitignore                        # Git ignore rules
+├── .env.example                      # Environment variables template
+├── README.md                         # Main project README
+├── LICENSE                           # License file
+└── CHANGELOG.md                      # Version history
 ```
 
 ## 📦 Deployment Recommendations
