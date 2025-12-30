@@ -10,38 +10,51 @@ from pathlib import Path
 
 
 class Settings(BaseSettings):
+    # ------------
     # Project Info
+    # ------------
     PROJECT_NAME: str = "Bookkeeping API"
     VERSION: str = "1.0.0"
     
+    # ------------
     # API Settings
+    # ------------
     API_V1_PREFIX: str = "/api/v1"
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:8000",
     ]
     
+    # -----
     # Paths
+    # -----
     BASE_DIR: Path = Path(__file__).parent.parent.parent.parent
     DATA_BASE_DIR: str = "./data"
     USER_DATA_DIR: str = "./data/user"
     CONFIG_FILE: str = "./config/config.yaml"
     
+    # ------------
     # Google Drive
+    # ------------
     DRIVE_FOLDER_ID: str = ""
     GOOGLE_CREDENTIALS_FILE: str = "credentials.json"
     GOOGLE_TOKEN_FILE: str = "token.json"
     GOOGLE_SCOPES: List[str] = ["https://www.googleapis.com/auth/drive.file"]
     
+    # --------
     # Database
+    # --------
     DATABASE_URL: str = "sqlite:///./data/bookkeeping.db"
     
+    # --------
     # Security
-    SECRET_KEY: str = "your-secret-key-change-this"
+    # --------
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
+    # ------------------
     # Default Categories
+    # ------------------
     DEFAULT_CATEGORIES: List[str] = [
         "Food",
         "Salary",
@@ -56,7 +69,9 @@ class Settings(BaseSettings):
 
 
 def load_yaml_config(config_path: str = None) -> dict:
-    """Load configuration from YAML file"""
+    """
+    Load configuration from YAML file
+    """
     if config_path is None:
         config_path = Settings().CONFIG_FILE
     
@@ -66,10 +81,14 @@ def load_yaml_config(config_path: str = None) -> dict:
     return {}
 
 
+# ------------------------
 # Global settings instance
+# ------------------------
 settings = Settings()
 
+# ------------------------------------
 # Load and merge YAML config if exists
+# ------------------------------------
 yaml_config = load_yaml_config()
 if yaml_config:
     if 'google_drive' in yaml_config:

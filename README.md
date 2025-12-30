@@ -91,7 +91,7 @@ bookkeeping-app/
 │   │   │       ├── reports.py        # Reports & analytics
 │   │   │       └── auth.py           # Authentication
 │   │   │
-│   │   ├── core/                     # Core business logic
+│   │   ├── domain/                   # Core business logic
 │   │   │   ├── __init__.py
 │   │   │   ├── accounts.py           # Account operations
 │   │   │   ├── transactions.py       # Transaction logic
@@ -139,9 +139,6 @@ bookkeeping-app/
 │   │   ├── test_api/
 │   │   ├── test_core/
 │   │   └── test_services/
-│   │
-│   ├── migrations/                   # Database migrations
-│   │   └── alembic/
 │   │
 │   ├── requirements.txt              # Python dependencies
 │   ├── requirements-dev.txt          # Dev dependencies

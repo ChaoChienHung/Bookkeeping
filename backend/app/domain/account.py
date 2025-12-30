@@ -1,11 +1,8 @@
-"""
-Core Business Logic - Account Management
-"""
 import os
 import json
 import re
+from backend.app.config import settings
 from typing import List, Optional
-from app.config import settings
 
 
 class AccountManager:

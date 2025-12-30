@@ -1,6 +1,3 @@
-"""
-Core Business Logic - Category Management
-"""
 import os
 import json
 from typing import List
@@ -8,7 +5,9 @@ from app.config import settings
 
 
 class CategoryManager:
-    """Manages transaction categories"""
+    """
+    Manages transaction categories
+    """
     
     def __init__(self, categories_file: str = None):
         self.categories_file = categories_file or os.path.join(
