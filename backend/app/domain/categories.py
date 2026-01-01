@@ -1,7 +1,7 @@
 import os
 import json
 from typing import List
-from app.config import settings
+from backend.app.config.config import settings
 
 
 class CategoryManager:
