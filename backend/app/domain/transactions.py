@@ -7,7 +7,7 @@ import re
 import pandas as pd
 from typing import Dict
 from datetime import datetime
-from app.config import settings
+from backend.app.config.config import settings
 
 
 class TransactionManager:
